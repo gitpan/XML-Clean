@@ -1,19 +1,8 @@
-# $Id: Clean.pm,v 1.5 2003/09/16 18:11:34 petr Exp $
-# $Log: Clean.pm,v $
-# Revision 1.5  2003/09/16 18:11:34  petr
-# Changes from "Koskamp, Maarten" <MKoskamp@kluwer.nl>
-#
-# Revision 1.4  2001/10/11 13:41:03  petr
-# * Added Makefile.PL & other standard Perl stuff
-# * Proved test-cases
-#
-# Revision 1.3  2001/09/23 19:25:19  petr
-# First clean revision.
-#
+# $Id: Clean.pm,v 1.6 2003/09/21 14:04:37 petr Exp $
 
 =head1 NAME
 
-XML::Clean - Ensure, that I<(HTML)> text pass through an XML parser.
+XML::Clean - Ensure, that I<(HTML)> text pass throught an XML parser.
 
 =head1 SYNOPSIS
 
@@ -49,6 +38,7 @@ text, then some will be added).
 =over 4
 
 =item XML::Clean::clean($text, [$version, [%options] ])
+
 
 Return (almost) XML text, made from input parameter C<$text>.
 
@@ -101,7 +91,7 @@ Its otherwise too ineficient and slow:).
 =cut
 
 BEGIN {
-	$VERSION = do { my @r = (q$Revision: 1.5 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+	$VERSION = do { my @r = (q$Revision: 1.6 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 }
 
 use strict;
@@ -182,12 +172,13 @@ sub handle_text {
 	my $element = shift;
 	
 	# escape our elements
-	$element =~ s#$escapes_keys#$escapes{$1}#exg;
-
+	$element =~ s#$escapes_keys#$escapes{$1}#exg if defined $element;
+	
 	return $element;
 }
 
 sub clean {
+
 	my $text = shift;
 	my $version = shift;
 	my $options = shift;
@@ -210,7 +201,7 @@ sub clean {
 	# if there is something in $output, it must be <?xml
 	# version..> string
 
-	$text =~ s/^<\?xml[^<>]*\?>\s*(<!\w+[^<>]*>)?\s*//s;
+	$text =~ s/^<\?xml[^<>]*\?>\s*(<!\w+[^<>]*>)?\s*//s if defined $text;
 	$output = $& unless $output; 
 
 	# if we are asked to produce full-correct text with root as root
@@ -223,7 +214,8 @@ sub clean {
 
 	undef @stack;
 
-	while ($text =~ m#^(.*?)<(/?\w+.*?)>(.*)#s) {
+	if (defined $text) {
+ 	  while ($text =~ m#^(.*?)<(/?\w+.*?)>(.*)#s) {
 	
 		my ($bg, $cont, $en) = ($1, $2, $3);
 		
@@ -257,9 +249,10 @@ sub clean {
 		}
 
 		$text = $en;
+	  }
 	}
 	
-	$output .= handle_text ($text);
+	$output .= handle_text ($text) if defined $text;
 	
 	my $x;
 	foreach $x (reverse @stack) {
