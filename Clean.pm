@@ -1,5 +1,12 @@
-# $Id
-# $Log
+# $Id: Clean.pm,v 1.4 2001/10/11 13:41:03 petr Exp $
+# $Log: Clean.pm,v $
+# Revision 1.4  2001/10/11 13:41:03  petr
+# * Added Makefile.PL & other standard Perl stuff
+# * Proved test-cases
+#
+# Revision 1.3  2001/09/23 19:25:19  petr
+# First clean revision.
+#
 
 =head1 NAME
 
@@ -7,16 +14,19 @@ XML::Clean - Ensure, that I<(HTML)> text pass throught an XML parser.
 
 =head1 SYNOPSIS
 
-	use XML::XMLClean;
+	use XML::Clean;
 
-	print XML::XMLClean::clean ("<foo bar>barfoo");
-		# <foo bar>barfoo</foo>
+	print XML::Clean::clean ("<foo bar>barfoo");
+		# <foo>barfoo</foo>
 	
-	print XML::XMLClean::clean ("<foo bar>barfoo",1.5); >>
-		# <?xml version="1.5" encoding="ISO-8859-1"?><foo bar>barfoo</foo> 
+	print XML::Clean::clean ("<foo bar>barfoo",1.5);
+		# <?xml version="1.5" encoding="ISO-8859-1"?>
+		# <foo bar>barfoo</foo> 
 	
-	print XML::XMLClean::clean ("bar <foo bar> bar",1.6,"XML_ROOT","ISO-8859-2"); 
-		# <?xml version="1.6" encoding="ISO-8859-2"?><XML_ROOT>bar <foo bar> bar </foo></XML_ROOT>" 
+	print XML::Clean::clean ("bar <foo bar=10> bar",1.6,){root=>"XML_ROOT",encoding=>"ISO-8859-2"} ); 
+		# <?xml version="1.6" encoding="ISO-8859-2"?>
+		# <XML_ROOT
+		# bar <foo bar="10"> bar</foo></XML_ROOT> 
 
 =head1 DESCRIPTION
 
@@ -79,7 +89,7 @@ Its otherwise too ineficient and slow:).
 =head1 AUTHOR
 
 =for html 
-<a href="mailto:peta@kubanek.net">peta@kubanek.net</a>. Send there any complains, comments and so on.
+<a href="mailto:petr@kubanek.net">petr@kubanek.net</a>. Send there any complains, comments and so on.
 
 =head1 DISTRIBUTION
 
@@ -89,13 +99,13 @@ Its otherwise too ineficient and slow:).
 =cut
 
 BEGIN {
-	$VERSION = do { my @r = (q$Revision: 1.1.1.1 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+	$VERSION = do { my @r = (q$Revision: 1.4 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 }
 
 use strict;
 use warnings;
 
-package 	XML::XMLClean;
+package 	XML::Clean;
 use vars 	qw(@ISA @EXPORT);
 require		Exporter;
 @ISA	  	=qw(Exporter);
@@ -112,6 +122,7 @@ sub clean_attr {
 	my $attr = shift;
 	return "" unless $attr;
 	my $ret;
+	$ret = "";
 	# put to result only well-formed or almost-well formed values
 	while ($attr =~ m/((?:\w|_|-)+)\s*=\s*((?:\w|\d|_|-)+|".*?")/g) {
 		my $name=$1;
@@ -129,7 +140,7 @@ sub clean_attr {
 sub handle_start {
 	my $element = shift;
 	my $attr = shift;
-	
+
 	push @stack, $element unless ($attr =~ m#/$#);
 
 	$attr = clean_attr $attr;
@@ -185,14 +196,13 @@ sub clean {
 
 	my $output = "";
 
-	$root = "xml_root" unless $root;
 	$encoding = "ISO-8859-1" unless $encoding;
 
 	if ($version) {
 		# first, check for <?xml ?> tag
 		if ($text !~ m/^<\?xml[^<>]*\?>\s*(<!\w+[^<>]*>)?\s*<\w+[^<>]*>/s ) {
 			$output = "<?xml version=\"$version\" encoding=\"$encoding\"?>\n";
-			$text = "<$root>\n". $text;
+			$text = "<$root>\n". $text if ($root);
 		}
 	}
 
@@ -252,7 +262,7 @@ sub clean {
 	
 	my $x;
 	foreach $x (reverse @stack) {
-		$output .= "</$x>\n";
+		$output .= "</$x>";
 	}
 
 	return $output;
