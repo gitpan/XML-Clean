@@ -1,5 +1,8 @@
-# $Id: Clean.pm,v 1.4 2001/10/11 13:41:03 petr Exp $
+# $Id: Clean.pm,v 1.5 2003/09/16 18:11:34 petr Exp $
 # $Log: Clean.pm,v $
+# Revision 1.5  2003/09/16 18:11:34  petr
+# Changes from "Koskamp, Maarten" <MKoskamp@kluwer.nl>
+#
 # Revision 1.4  2001/10/11 13:41:03  petr
 # * Added Makefile.PL & other standard Perl stuff
 # * Proved test-cases
@@ -10,7 +13,7 @@
 
 =head1 NAME
 
-XML::Clean - Ensure, that I<(HTML)> text pass throught an XML parser.
+XML::Clean - Ensure, that I<(HTML)> text pass through an XML parser.
 
 =head1 SYNOPSIS
 
@@ -47,13 +50,12 @@ text, then some will be added).
 
 =item XML::Clean::clean($text, [$version, [%options] ])
 
-
 Return (almost) XML text, made from input parameter C<$text>.
 
 When C<$version> is false, only match tags, and escapes any unmatched
 tags.
 
-When you pass C<$version> parameter, than text is checked for standard
+When you pass C<$version> parameter, then text is checked for standard
 XML head (<!XML VERSION=..>), and depending on options (force_root), some is
 added / existing is modified. Also depending on options, text is checked for
 root element. VERSION XML head parameter in output text is set to parameter
@@ -66,7 +68,7 @@ to I<ISO-8859-1>.
 
 force_root - If true, output text will have XML root. Defaults to I<false>.
 
-root - Output text will have that text as root element. Defaults to
+root - Output text will have that tag as root element. Defaults to
 I<xml_root>.
 
 =item clean_file $filename [$version [%options] ] 
@@ -99,7 +101,7 @@ Its otherwise too ineficient and slow:).
 =cut
 
 BEGIN {
-	$VERSION = do { my @r = (q$Revision: 1.4 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+	$VERSION = do { my @r = (q$Revision: 1.5 $ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 }
 
 use strict;
@@ -186,7 +188,6 @@ sub handle_text {
 }
 
 sub clean {
-
 	my $text = shift;
 	my $version = shift;
 	my $options = shift;
